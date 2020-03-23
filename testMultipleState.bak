@@ -66,7 +66,7 @@
                [patrat (car (cdr state))]
                [(ball ball_x ball_y  ball__) minge]
                [(brick brick_x brick_y brick__) patrat])
-    (cond [(key=? pressed-key " ") (list minge (brick (+ brick_x 1) (+ brick_y 1) brick__))]
+    (cond [(key=? pressed-key "left") (list minge (brick (+ brick_x 1) (+ brick_y 1) brick__))]
           [else (list minge patrat)])))
 
 

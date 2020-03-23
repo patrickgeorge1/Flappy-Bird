@@ -52,6 +52,17 @@
 ; care incep cu TODO %nume_test, unde trebuie sa modificati sau sa implementati o functie, pentru
 ; a trece testul %nume_test.
 ;
+;Initial state
+; Primul pas pe care trebuie sa il facem este sa cream starea initiala a jocului.
+; Aceasta va fi salvata in (get-initial-state), si trebuie sa incapsuleze toate informatiile
+; necesare jocului, si anume: informatii despre pasare, despre pipes si despre powerups.
+; Recomandam ca in pasare, sa retineti, printre altele, informatii despre y-ul curent
+; si viteza pe y
+; Pe parcursul temei, in state, salvati coordonatele colturilor din stanga sus ale obiectelor.
+; Aceasta va face mai usoara atat logica miscarii obiectelor, cat si testarea cerintelor.
+; Toate coordonatele oferite in comentarii sau in fisierul constants.rkt, se refera la
+; coltul din stanga sus ale obiectelor!
+;Inițial state
 ; Primul pas pe care trebuie să îl facem este să creăm starea inițială a jocului.
 ; Aceasta va fi salvată în (get-initial-state), și trebuie să incapsuleze toate informațiile
 ; necesare jocului, și anume: informații despre pasăre, despre pipes și, pentru bonus,
@@ -63,26 +74,12 @@
 ; Toate coordonatele oferite în comentarii sau în fișierul variables.rkt se referă la
 ; colțul din stânga sus ale obiectelor!
 
-
-
-
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 0                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-struct bird (y speed color))
-(define-struct pipe (x y color))
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 1                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define initial-state (list (bird bird-x bird-initial-y bird-color) '() 0))
-
-
+;TODO 1
+; După ce definiți structurile lui (get-initial-state) și a păsării, introduceți în prima
+; pe cea din urmă. Colțul din stânga sus a păsării se va află inițial la:
+;    y = bird-inițial-y
+; și x = bird-x.
+; (get-initial-state) va fi o funcție care va returna starea inițială a jocului.
 
 ;TODO 8
 ; În starea jocului, trebuie să păstrăm informații despre pipes. Pe parcursul jocului,
@@ -105,39 +102,47 @@
 ; Atenție get-initial-state trebuie sa fie o funcție
 ; și trebuie apelată în restul codului.
 (define (get-initial-state)
-  initial-state)
+  `codul-tau-aici)
 
+;TODO 2
+; După aceasta, implementați un getter care extrage din structura voastră
+; pasărea, și un al doilea getter care extrage din structura pasăre
+; y-ul curent pe care se află această.
+(define (get-bird state)
+  state)
+(define (get-bird-y bird)
+  bird)
 
+;TODO 3
+; Trebuie să implementăm logică gravitației. next-state-bird va primi drept
+; parametri o structură de tip pasăre, și gravitația(un număr real). Aceasta va adaugă
+; pozitiei pe y a păsării viteza acesteia pe y, si va adaugă vitezei pe y a păsării,
+; gravitația.
+(define (next-state-bird bird gravity)
+  `codul-tau-aici)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 2             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (get-bird state) (car state))
-(define (get-bird-y bird) (bird-x bird))
+;TODO 4
+; După aceasta, implementati un getter care extrage din structura voastră
+; viteza pe y a păsării.
+(define (get-bird-v-y bird)
+  bird)
 
+;TODO 6
+; Dorim să existe un mod prin care să imprimăm păsării un impuls.
+; Definiți funcția next-state-bird-onspace care va primi drept parametri
+; o structură de tip pasăre, momentum(un număr real), și va schimbă viteza
+; pe y a păsării cu acea valoare.
+(define (next-state-bird-onspace bird momentum)
+  `codul-tau-aici)
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 3             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (next-state-bird bird-obj gravity)
-  (match-let* ([(bird y speed color) bird-obj])
-    (bird (+ y speed) (+ speed gravity) bird-color)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 4             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (get-bird-v-y bird-obj)
-  (bird-speed bird-obj))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 6             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (next-state-bird-onspace bird-obj momentum)
-  (match-let* ([(bird y speed color) bird-obj])
-    (bird y momentum bird-color)))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 7             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Change
+; Change va fi responsabil de input-ul de la tastatură al jocului.
+;TODO 7
+; Acesta va primi drept parametri o structură de tip stare, și tasta pe
+; care am apăsat-o. Aceasta va imprimă păsării momentum-ul, apelând
+; funcția next-state-bird-onspace. Pentru orice altă tasta, starea rămâne aceeași.
 (define (change current-state pressed-key)
-  (match-let* ([old_b (get-bird current-state)]
-               [new_b (next-state-bird-onspace old_b initial-momentum)]
-               [old_p (get-pipes current-state)]
-               [old_score (get-score current-state)])
-    (cond [(key=? pressed-key " ") (list new_b old_p old_score)]
-          [else (list old_b old_p old_score)])))
+  current-state)
 
 ;TODO 9
 ; După ce ați definit structurile pentru mulțimea de pipes și pentru un singur pipe,
@@ -244,14 +249,14 @@
               [(posn BX2 BY2) B2])
     (and (< AX1 BX2) (> AX2 BX1) (< AY1 BY2) (> AY2 BY1))))
 
+;Next-state
+; Next-state va fi apelat de big-bang la fiecare cadru, pentru a crea efectul de
+; animație. Acesta va primi ca parametru o structură de tip stare, și va întoarce
+; starea corespunzătoare următorului cadru.
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 5             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (next-state-helper state)
-        (match-let* ([old_b (get-bird state)]
-                     [(bird y speed  color) old_b]
-                     [new_b (next-state-bird old_b initial-gravity)])
-                     (list new_b '() 0)))
-(define (next-state state) (next-state-helper state))
+;TODO 5
+; Trebuie să integrăm funcția implementată anterior, și anume next-state-bird,
+; în next-state.
 
 ;TODO 15
 ; Vrem să implementăm logică legată de mișcarea, ștergerea și adăugarea pipe-urilor
@@ -259,8 +264,8 @@
 
 ;TODO 18
 ; Vrem ca next-state să incrementeze scorul cu 0.1 la fiecare cadru.
-;(define (next-state state)
-;  state)
+(define (next-state state)
+  state)
 
 ; draw-frame
 ; draw-frame va fi apelat de big-bang dupa fiecare apel la next-state, pentru a afisa cadrul curent.
