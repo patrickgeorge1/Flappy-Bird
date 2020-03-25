@@ -47,6 +47,9 @@
 (provide get-variables-momentum)
 (provide get-variables-scroll-speed)
 
+; functions
+(provide list-size)
+
 ;---------------------------------------checker_exports------------------------------------------------
 ; Checker-ul contine un numar de teste, fiecare cu numele sau. In acest fisier veti gasi comentarii
 ; care incep cu TODO %nume_test, unde trebuie sa modificati sau sa implementati o functie, pentru
@@ -79,31 +82,19 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 8                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (stream-pipes)
+  (stream-cons (pipe scene-width (+ added-number (random random-threshold)) pipe-color) (stream-pipes)))
+(define (create-pipe) (stream-first (stream-pipes)))
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 1                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define initial-state (list (bird bird-x bird-initial-y bird-color) '() 0))
+(define initial-state (list (bird bird-x bird-initial-y bird-color) (list (pipe scene-width (create-pipe) pipe-color)) 0))
 
 
 
-;TODO 8
-; În starea jocului, trebuie să păstrăm informații despre pipes. Pe parcursul jocului,
-; pipe-urile se vor schimba, unele vor fi șterse și vor fi adăugate altele.
-; După ce definiți structura pentru pipe și pentru mulțimea de pipes din stare,
-; adăugați primul pipe în starea jocului. Acesta se va află inițial în afară ecranului.
-; Celelalte pipe-uri vor fi adăugate ulterior, poziționându-le după acest prim pipe.
-; Atenție! Fiecare pipe este format din 2 părți, cea superioară și cea inferioară,
-; acestea fiind despărțite de un gap de înălțime pipe-self-gap.
-; Colțul din stânga sus al gap-ului dintre componentele primului pipe se va afla inițial la:
-;    y = (+ added-number (random random-threshold)), pentru a da un element de noroc jocului,
-; și x = scene-width,
-; pentru a-l forța să nu fie inițial pe ecran.
-; Atenție! Recomandăm să păstrați în stare colțul din stânga sus al chenarului lipsa
-; dintre cele 2 pipe-uri!
-
-;TODO 16
-; Vrem o modalitate de a păstra scorul jocului. După ce definiți structura
-; acestuia, adăugați scorul inițial, adică 0, în starea inițială a jocului.
-; Atenție get-initial-state trebuie sa fie o funcție
-; și trebuie apelată în restul codului.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 16                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (get-initial-state)
   initial-state)
 
@@ -139,71 +130,63 @@
     (cond [(key=? pressed-key " ") (list new_b old_p old_score)]
           [else (list old_b old_p old_score)])))
 
-;TODO 9
-; După ce ați definit structurile pentru mulțimea de pipes și pentru un singur pipe,
-; implementați getterul get-pipes, care va extrage din starea jocului mulțimea de pipes,
-; sub formă de lista.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 9             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (get-pipes state)
-  `(gol))
+ (car (cdr state)))
 
-;TODO 10
-; Implementați get-pipe-x ce va extrage dintr-o singură structura de tip pipe, x-ul acesteia.
-(define(get-pipe-x pipe)
-  pipe)
 
-;TODO 11
-; Trebuie să implementăm logica prin care se mișcă pipes.
-; Funcția move-pipes va primi drept parametri mulțimea pipe-urilor din stare
-; și scroll-speed(un număr real). Aceasta va adaugă x-ului fiecărui pipe
-; scroll-speed-ul dat.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 10            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define(get-pipe-x pipe-obj)
+  (pipe-x pipe-obj))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 11            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (move-pipes pipes scroll-speed)
-  pipes)
+  (if (null? pipes) pipes
+      (match-let* ([(pipe x y color) (car pipes)]
+                   [translated_pipe (pipe (+ x scroll-speed) y color)])
+      (cons translated_pipe (move-pipes (cdr pipes) scroll-speed)
+  ))))
 
-;TODO 12
-; Vom implementa logica prin care pipe-urile vor fi șterse din stare. În momentul
-; în care colțul din DREAPTA sus al unui pipe nu se mai află pe ecran, acesta trebuie
-; șters.
-; Funcția va primi drept parametru mulțimea pipe-urilor din stare.
-;
-; Hint: cunoaștem lățimea unui pipe, pipe-width
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 12            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (is_in_scene pipe-obj)
+  (if (> 0 (+ 104(pipe-x pipe-obj))) #f #t))
 (define (clean-pipes pipes)
-  pipes)
+  (filter is_in_scene pipes))
 
 
-;TODO 13
-; Vrem să avem un sursa continuă de pipe-uri.
-; Implementati funcția add-more-pipes, care va primi drept parametru mulțimea pipe-urilor
-; din stare și, dacă avem mai puțin de no-pipes pipe-uri, mai adăugăm una la mulțime,
-; având x-ul egal cu pipe-width + pipe-gap + x-ul celui mai îndepărtat pipe, în raport
-; cu pasărea.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 13            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; (pipe-x (car (add-more-pipes (list (pipe 100 1234  "yellow") (pipe 45 1234  "yellow") (pipe 200 1234  "yellow") (pipe 12 1234  "yellow") (pipe 23 123 "ssad")))))
+(define (get-furthest-pipe pipes result)
+  (if (null? pipes) (car result)
+      (if (or (null? result) (< (get-pipe-x (car result)) (get-pipe-x (car pipes)))) (get-furthest-pipe (cdr pipes) (list (car pipes)))
+          (get-furthest-pipe (cdr pipes) result))))
 (define (add-more-pipes pipes)
-  pipes)
+  (if (< (list-size pipes) no-pipes)
+      (match-let* ([last_pipe (get-furthest-pipe pipes '())]
+                   [(pipe x y color) last_pipe]
+                   [(pipe new_x new_y new_color) (create-pipe)]
+                   [new_pipe (pipe (+ pipe-width pipe-gap x) new_y new_color)])
+        (cons new_pipe pipes))
+      pipes))
 
-;TODO 14
-; Vrem ca toate funcțiile implementate anterior legate de pipes să fie apelate
-; de către next-state-pipes.
-; Aceasta va primi drept parametri mulțimea pipe-urilor și scroll-speed-ul,
-; și va apela cele trei funcții implementate anterior, în această ordine:
-; move-pipes, urmat de clean-pipes, urmat de add-more pipes.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 14            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;(pipe-x (car  (next-state-pipes (list (pipe 10 2000 "dsad") (pipe 20 2000 "dsad") (pipe 30 2000 "dsad") (pipe 40 2000 "dsad")) -124)))
 (define (next-state-pipes pipes scroll-speed)
-  pipes)
+  (match-let*([moved_pipes (move-pipes pipes scroll-speed)]
+              [cleaned_pipes (clean-pipes moved_pipes)]
+              [added_pipes (add-more-pipes cleaned_pipes)])
+    added_pipes))
 
-;TODO 17
-; Creați un getter ce va extrage scorul din starea jocului.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 17            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (get-score state)
-  state)
+  (car (cdr ( cdr state))))
 
-;TODO 19
-; Vrem să creăm logica coliziunii cu pământul.
-; Implementati check-ground-collision, care va primi drept parametru
-; o structura de tip pasăre, și returnează true dacă aceasta are coliziune
-; cu pământul.
-;
-; Hint: știm înălțimea păsării, bird-height, și y-ul pământului, ground-y.
-; Coliziunea ar presupune ca un colț inferior al păsării să aibă y-ul
-; mai mare sau egal cu cel al pământului.
-(define (check-ground-collision bird)
- `codul-tau-aici)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 19            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; prag 903
+(define (check-ground-collision bird-obj)
+ (match-let*([(bird y speed color) bird-obj]
+             [lower_point (+ y bird-height)])
+   (if (>= lower_point scene-height) #t #f)))
 
 ; invalid-state?
 ; invalid-state? îi va spune lui big-bang dacă starea curentă mai este valida,
@@ -249,18 +232,22 @@
 (define (next-state-helper state)
         (match-let* ([old_b (get-bird state)]
                      [(bird y speed  color) old_b]
-                     [new_b (next-state-bird old_b initial-gravity)])
-                     (list new_b '() 0)))
+                     [new_b (next-state-bird old_b initial-gravity)]
+                     
+                     [old_pipes (get-pipes state)]
+                     [new_pipes (next-state-pipes old_pipes initial-scroll-speed)]
+
+                     [old_score (get-score state)]
+                     [new_score (+ 0.1 old_score)])
+                     (list new_b new_pipes new_score)))
 (define (next-state state) (next-state-helper state))
 
-;TODO 15
-; Vrem să implementăm logică legată de mișcarea, ștergerea și adăugarea pipe-urilor
-; în next-state. Acesta va apela next-state-pipes pe pipe-urile din starea curentă.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 15            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; added next-state-pipes in next-state
 
-;TODO 18
-; Vrem ca next-state să incrementeze scorul cu 0.1 la fiecare cadru.
-;(define (next-state state)
-;  state)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 18            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; incrementeaza scorul cu 0.1 la fiecare cadru.
+
 
 ; draw-frame
 ; draw-frame va fi apelat de big-bang dupa fiecare apel la next-state, pentru a afisa cadrul curent.
@@ -383,6 +370,7 @@
 ; Imaginea cu indexul i va fi așezată la (ability-posn.x - 50*i, ability-posn.y)
 (define (place-active-abilities abilities scene)
 	'your-code-here)
+
 
 (module+ main
 	(big-bang (get-initial-state)

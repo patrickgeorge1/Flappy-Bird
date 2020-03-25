@@ -14,6 +14,7 @@
 (define initial-momentum 15.0)
 
 (define bird-color "yellow")
+(define pipe-color "green")
 (define bird-width 81)
 (define bird-height 57)
 (define bird-x (quotient scene-width 3))
@@ -34,6 +35,11 @@
 (define text-y 50)
 (define abilities-posn (make-posn (- scene-width 50) 80))
 (define DISPLAYED_ABILITIES 4)
+
+(define (list-size l)
+  (if (null? l) 0 (+ 1 (list-size (cdr l)))))
+(define (list-last l)
+  (if (null? (cdr l)) (car l) (list-last (cdr l))))
 
 ; checker stuff
 (define (disable-bonus) (set! DISPLAYED_ABILITIES 0))
