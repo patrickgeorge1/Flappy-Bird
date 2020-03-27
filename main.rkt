@@ -204,8 +204,8 @@
                [bRight (+ bLeft bird-width)]
                [gapRight (+ gapLeft pipe-width)]
                [gapDown (+ gapUp pipe-self-gap)])  ;; TODO 
-    (if (and (< bLeft gapRight) (> bRight gapLeft))
-        (if (or (< bUp gapUp) (> bDown gapDown))
+    (if (and (<= bLeft gapRight) (>= bRight gapLeft))
+        (if (or (<= bUp gapUp) (>= bDown gapDown))
 
             
             (match-let* ()
