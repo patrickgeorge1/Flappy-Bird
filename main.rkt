@@ -96,7 +96,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 1                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define initial-state (list (bird bird-initial-y initial-momentum bird-color) (list (create-pipe)) 0))
+(define initial-state (list (bird bird-initial-y 0 bird-color) (list (create-pipe)) 0))
 
 
 
