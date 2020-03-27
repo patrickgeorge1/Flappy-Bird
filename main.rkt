@@ -85,12 +85,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 8                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (stream-pipes)
   (stream-cons (pipe scene-width (+ added-number (random random-threshold)) pipe-color) (stream-pipes)))
-(define (create-pipe) (stream-first (stream-pipes)))
+(define (create-pipe)
+  (match-let* ([new_pipe (stream-first (stream-pipes))])
+    (write 'pipe)
+    (write '=>)
+    (write (pipe-y new_pipe))
+    (write ':)
+    new_pipe))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 1                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define initial-state (list (bird bird-x bird-initial-y bird-color) (list (pipe scene-width (create-pipe) pipe-color)) 0))
+(define initial-state (list (bird bird-initial-y initial-momentum bird-color) (list (create-pipe)) 0))
 
 
 
@@ -118,7 +124,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 6             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (next-state-bird-onspace bird-obj momentum)
   (match-let* ([(bird y speed color) bird-obj])
-    (bird y momentum bird-color)))
+    (bird y (* momentum -1) "yellow")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 7             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -143,7 +149,7 @@
 (define (move-pipes pipes scroll-speed)
   (if (null? pipes) pipes
       (match-let* ([(pipe x y color) (car pipes)]
-                   [translated_pipe (pipe (+ x scroll-speed) y color)])
+                   [translated_pipe (pipe (- x scroll-speed) y color)])
       (cons translated_pipe (move-pipes (cdr pipes) scroll-speed)
   ))))
 
@@ -186,46 +192,48 @@
 (define (check-ground-collision bird-obj)
  (match-let*([(bird y speed color) bird-obj]
              [lower_point (+ y bird-height)])
-   (if (>= lower_point scene-height) #t #f)))
+   (if (>= lower_point ground-y) #t #f)))
 
-; invalid-state?
-; invalid-state? îi va spune lui big-bang dacă starea curentă mai este valida,
-; sau nu. Aceasta va fi validă atât timp cât nu avem coliziuni cu pământul
-; sau cu pipes.
-; Aceasta va primi ca parametru starea jocului.
 
-;TODO 20
-; Vrem să integrăm verificarea coliziunii cu pământul în invalid-state?.
+(define (check-bird-pipe-collision bird-obj pipe-obj)
+  (match-let* ([(bird bUp speed bcolor) bird-obj]
+               [(pipe gapLeft gapUp gapColor) pipe-obj]
+               
+               [bDown (+ bUp bird-height)]
+               [bLeft bird-x]
+               [bRight (+ bLeft bird-width)]
+               [gapRight (+ gapLeft pipe-width)]
+               [gapDown (+ gapUp pipe-self-gap)])  ;; TODO 
+    (if (and (< bLeft gapRight) (> bRight gapLeft))
+        (if (or (< bUp gapUp) (> bDown gapDown))
 
-;TODO 22
-; Odată creată logică coliziunilor dintre pasăre și pipes, vrem să integrăm
-; funcția nou implementată în invalid-state?.
+            
+            (match-let* ()
+                  (write bUp)
+                  (write '-)
+                  (write gapLeft)
+                  (write '-)
+                  (write gapUp)
+                  (write '-)
+                  #t
+            ) 
+
+            #f) #f)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 20            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 22            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (invalid-state? state)
-  #f)
+  (match-let*([bird-obj (get-bird state)]
+              [pipes (get-pipes state)])
+    (or (check-ground-collision bird-obj) (check-pipe-collisions bird-obj pipes))))
 
-;TODO 21
-; Odată ce am creat pasărea, pipe-urile, scor-ul și coliziunea cu pământul,
-; următorul pas este verificarea coliziunii dintre pasăre și pipes.
-; Implementati funcția check-pipe-collisions care va primi drept parametri
-; o structură de tip pasăre, mulțimea de pipes din stare, și va returna
-; true dacă există coliziuni, și false în caz contrar. Reiterând,
-; fiecare pipe este format din 2 părți, cea superioară și cea inferioară,
-; acestea fiind despărțite de un gap de înălțime pipe-self-gap. Pot există
-; coliziuni doar între pasăre și cele două părți. Dacă pasărea se află în
-; chenarul lipsă, nu există coliziune.
-;
-; Hint: Vă puteți folosi de check-collision-rectangle, care va primi drept parametri
-; colțul din stânga sus și cel din dreapta jos ale celor două dreptunghiuri
-; pe care vrem să verificăm coliziunea.
-(define (check-pipe-collisions bird pipes)
-  `codul-tau-aici)
-
-(define (check-collision-rectangles A1 A2 B1 B2)
-  (match-let ([(posn AX1 AY1) A1]
-              [(posn AX2 AY2) A2]
-              [(posn BX1 BY1) B1]
-              [(posn BX2 BY2) B2])
-    (and (< AX1 BX2) (> AX2 BX1) (< AY1 BY2) (> AY2 BY1))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 21            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (check-pipe-collisions bird-obj pipes)
+  (check-pipe-collisions-helper bird-obj pipes #f))
+(define (check-pipe-collisions-helper bird-obj pipes acc)
+  (if (or (null? pipes) acc) acc
+      (check-pipe-collisions-helper bird-obj (cdr pipes) (check-bird-pipe-collision bird-obj (car pipes)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 5             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -265,6 +273,49 @@
 ; ground -> ground-y si ground-height, acesta va acoperi intreaga latime a ecranului
 ; scor -> text-x si text-y
 ; pipes -> pipe-width si pipe-height
+
+
+(define (get_drawn_pipes_helper pipes)
+  (if (null? pipes) initial-scene
+       (match-let* ([next_pipe (car pipes)]
+                    [(pipe x y color) next_pipe]
+                    [remaining_pipes (cdr pipes)])
+         (place-image
+           (rectangle pipe-width pipe-self-gap "solid" "white") (+ (quotient pipe-width 2) x) (+ (quotient pipe-self-gap 2) y)
+           (place-image
+               (rectangle pipe-width scene-height "solid" "green") (+ (quotient pipe-width 2) x) (+ (quotient scene-height 2) 0) 
+               (get_drawn_pipes_helper remaining_pipes))))))
+
+
+(define (get_drown_score_pipes score pipes)
+  (match-let* ([score_pic (score-to-image score)])
+    (place-image
+         score_pic  text-x text-y
+         (get_drawn_pipes_helper pipes))))
+      
+
+(define (get_drown_ground_score_pipes score pipes)
+  (place-image
+     ground-image (+ (quotient scene-width 2) 0) (+ (quotient ground-height 2) ground-y)
+     (get_drown_score_pipes score pipes)))
+
+
+(define (get_drown_bird_ground_score_pipes bird-obj score pipes)
+  (match-let* ([(bird y speed color) bird-obj])
+    (place-image
+     bird-image (+ (quotient bird-width 2) bird-x) (+ (quotient bird-height 2) y)
+     (get_drown_ground_score_pipes score pipes))))
+
+(define (draw-frame state)
+  (match-let* ([bird-obj (get-bird state)]
+               [pipes (get-pipes state)]
+               [score (get-score state)])
+    
+    (get_drown_bird_ground_score_pipes bird-obj score pipes)))
+
+
+
+
 (define bird-image (rectangle bird-width bird-height  "solid" "yellow"))
 (define ground-image (rectangle scene-width ground-height "solid" "brown"))
 (define initial-scene (empty-scene scene-width scene-height))
@@ -273,8 +324,6 @@
 (define (score-to-image x)
 	(apply text/font (~v (round x)) 24 "indigo" text-family))
 
-(define (draw-frame state)
-  initial-scene)
 
 ; Folosind `place-image/place-images` va poziționa pipe-urile pe scenă.
 (define (place-pipes pipes scene)

@@ -37,11 +37,13 @@
                  [patrat (car (cdr state))]
                  [(ball ball_x ball_y ball_color) minge]
                  [(brick brick_x brick_y brick_color) patrat])
-       (place-image
-           (circle 10 "solid" ball_color)  ball_x ball_y 
+      (place-image
+       (rectangle 250 250 "solid" "black") 250 250
+      (place-image
+           (circle 250 "solid" ball_color)  250 250 
            (place-image
-               (rectangle 50 55 "solid" brick_color) brick_x brick_y 
-               (empty-scene WIDTH HEIGHT)))))
+               (rectangle 500 500 "solid" brick_color) 250 250 
+               (empty-scene 1000 1000))))))
 (define (draw-frame state) (draw-frame-helper state))
 
 
@@ -68,7 +70,6 @@
                [(brick brick_x brick_y brick__) patrat])
     (cond [(key=? pressed-key " ") (list minge (brick (+ brick_x 1) (+ brick_y 1) brick__))]
           [else (list minge patrat)])))
-
 
 
 ; run

@@ -13,8 +13,6 @@
 (define initial-gravity 1.3)
 (define initial-momentum 15.0)
 
-(define bird-color "yellow")
-(define pipe-color "green")
 (define bird-width 81)
 (define bird-height 57)
 (define bird-x (quotient scene-width 3))
@@ -24,6 +22,8 @@
 (define pipe-height scene-height)
 (define pipe-gap 232.75)
 (define pipe-self-gap 280)
+
+
 
 (define initial-scroll-speed 7.0)
 
