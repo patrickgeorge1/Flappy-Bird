@@ -87,10 +87,10 @@
   (stream-cons (pipe scene-width (+ added-number (random random-threshold)) pipe-color) (stream-pipes)))
 (define (create-pipe)
   (match-let* ([new_pipe (stream-first (stream-pipes))])
-    (write 'pipe)
-    (write '=>)
-    (write (pipe-y new_pipe))
-    (write ':)
+ ;   (write 'pipe)
+  ;  (write '=>)
+  ;  (write (pipe-y new_pipe))
+  ;  (write ':)
     new_pipe))
 
 
@@ -108,7 +108,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;                TODO 2             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (get-bird state) (car state))
-(define (get-bird-y bird) (bird-x bird))
+(define (get-bird-y bird) (bird-y bird))
 
 
 
@@ -209,12 +209,12 @@
 
             
             (match-let* ()
-                  (write bUp)
-                  (write '-)
-                  (write gapLeft)
-                  (write '-)
-                  (write gapUp)
-                  (write '-)
+                  ;(write bUp)
+                 ; (write '-)
+                 ; (write gapLeft)
+                 ; (write '-)
+                 ; (write gapUp)
+                 ; (write '-)
                   #t
             ) 
 
@@ -318,7 +318,7 @@
 
 (define bird-image (rectangle bird-width bird-height  "solid" "yellow"))
 (define ground-image (rectangle scene-width ground-height "solid" "brown"))
-(define initial-scene (empty-scene scene-width scene-height))
+(define initial-scene (rectangle scene-width scene-height "solid" "white"))
 
 (define text-family (list "Gill Sans" 'swiss 'normal 'bold #f))
 (define (score-to-image x)
