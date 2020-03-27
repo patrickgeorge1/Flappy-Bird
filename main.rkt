@@ -4,6 +4,7 @@
 (require 2htdp/image)
 (require 2htdp/universe)
 (require lang/posn)
+(require "random.rkt")
 
 (require "abilities.rkt")
 (require "constants.rkt")
@@ -96,13 +97,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 1                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define initial-state (list (bird bird-initial-y 0 bird-color) (list (create-pipe)) 0))
+;(define initial-state (list (bird bird-initial-y 0 bird-color) (list (create-pipe)) 0))
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;             TODO 16                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (get-initial-state)
-  initial-state)
+  (define fbird (bird bird-initial-y 0 bird-color))
+  (define fpipe (pipe scene-width (+ added-number (random random-threshold)) scene-width))
+  (define score 0)
+  (list fbird (list fpipe) score))
 
 
 
@@ -280,8 +284,9 @@
        (match-let* ([next_pipe (car pipes)]
                     [(pipe x y color) next_pipe]
                     [remaining_pipes (cdr pipes)])
+         
          (place-image
-           (rectangle pipe-width pipe-self-gap "solid" "white") (+ (quotient pipe-width 2) x) (+ (quotient pipe-self-gap 2) y)
+           (rectangle (+ 1 pipe-width) pipe-self-gap "solid" "white") (+ (quotient pipe-width 2) x) (+ (quotient pipe-self-gap 2) y)
            (place-image
                (rectangle pipe-width scene-height "solid" "green") (+ (quotient pipe-width 2) x) (+ (quotient scene-height 2) 0) 
                (get_drawn_pipes_helper remaining_pipes))))))
@@ -322,7 +327,9 @@
 
 (define text-family (list "Gill Sans" 'swiss 'normal 'bold #f))
 (define (score-to-image x)
-	(apply text/font (~v (round x)) 24 "indigo" text-family))
+(if SHOW_SCORE
+	(apply text/font (~v (round x)) 24 "indigo" text-family)
+	empty-image))
 
 
 ; Folosind `place-image/place-images` va poziționa pipe-urile pe scenă.

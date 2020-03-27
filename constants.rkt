@@ -4,6 +4,12 @@
 (require lang/posn)
 (provide (all-defined-out))
 
+
+(define (list-size l)
+  (if (null? l) 0 (+ 1 (list-size (cdr l)))))
+(define (list-last l)
+  (if (null? (cdr l)) (car l) (list-last (cdr l))))
+
 (define fps 28.0)
 
 (define scene-height 960)
@@ -43,9 +49,3 @@
 (define (disable-score) (set! SHOW_SCORE #f))
 (define (disable-bonus) (set! DISPLAYED_ABILITIES 0))
 (define (enable-bonus) (set! DISPLAYED_ABILITIES 4))
-
-
-(define (list-size l)
-  (if (null? l) 0 (+ 1 (list-size (cdr l)))))
-(define (list-last l)
-  (if (null? (cdr l)) (car l) (list-last (cdr l))))

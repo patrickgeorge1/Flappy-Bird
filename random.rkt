@@ -18,9 +18,10 @@
 (define (fake-sample . x)
 	(match-let* ([(list d n) x]
 							[L (discrete-dist-values d)])
-		(if (> (- n (length L)) 0)
-		(append L (make-list (- n (length L)) (car L)))
-		L)))
+		(cond [(> (- n (length L)) 0)
+					(append L (make-list (- n (length L)) (car L)))]
+					[(equal? n 0) '()]
+					[else L])))
 
 (define (make-predictive x)
   (set! seq (cons 0 x))
